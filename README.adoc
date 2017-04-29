@@ -1,4 +1,4 @@
-= Talks about xPaaS (Docker, Kubernetes, OpensHift, Fabric8) and Service Orchestration
+= Talks about xPaaS (Docker, Kubernetes, OpenShift, Fabric8) and Service Orchestration
 
 == Copyright and Licensing
 
