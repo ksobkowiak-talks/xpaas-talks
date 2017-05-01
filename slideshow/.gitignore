@@ -1,0 +1,5 @@
+.bundle/
+.decktape/
+reveal.js/
+
+Gemfile.lock

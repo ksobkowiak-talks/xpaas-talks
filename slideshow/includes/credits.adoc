@@ -1,0 +1,25 @@
+=== Credits
+
+[.small-text]
+--
+.Special thanks to all the people who made and released their awesome resources for free:
+* link:http://www.slideshare.net/jimjag/open-source-101-gwo2016[_Open Source 101_]
+by link:http://twitter.com/jimjag[Jim Jagielski] is licensed under
+link:http://creativecommons.org/licenses/by-nc-sa/4.0/[CC BY-NC-SA 4.0]
+* link:http://www.slideshare.net/jimjag/understanding-open-source-licenses[_Understanding Open Source Licenses_]
+by link:http://twitter.com/jimjag[Jim Jagielski] is licensed under
+link:http://creativecommons.org/licenses/by/3.0/[CC BY 3.0]
+* link:http://www.slideshare.net/jimjag/open-source-not-just-for-code-anymore[_Open Source - Not just for IT anymore_]
+by link:http://twitter.com/jimjag[Jim Jagielski] is licensed under
+link:http://creativecommons.org/licenses/by/3.0/[CC BY 3.0]
+* link:http://www.slideshare.net/jimjag/code-community-and-open-source[_Code, Community, and Open Source_]
+by link:http://twitter.com/jimjag[Jim Jagielski] is licensed under
+link:http://creativecommons.org/licenses/by-nc-sa/4.0/[CC BY-NC-SA 4.0]
+* link:http://boxofclue.com/presentations/apache_way/[_The Apache Way_]
+by link:https://twitter.com/rbowen[Rich Bowen] is licensed under
+link:http://www.apache.org/licenses/LICENSE-2.0[Apache License, Version 2.0]
+* link:http://www.slideshare.net/ksobkowiak/integrate-yourself-with-the-apache-software-foundation-33rd-degree-4charity[_Integrate (Yourself) with the Apache Software Foundation_]
+by link:https://twitter.com/ksobkowiak[Krzysztof Sobkowiak] is licensed under
+link:http://www.apache.org/licenses/LICENSE-2.0[Apache License, Version 2.0]
+* Past Apache Way slides by Jim Jagielski, Shane Curcuru, Justin Erenkrantz, Rich Bowen and Ross Gardler
+--

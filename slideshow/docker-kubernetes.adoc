@@ -1,0 +1,92 @@
+include::includes/_settings.adoc[]
+
+:revealjs_theme: sobkowiak-cg-craftsmanship
+:speaker: Krzysztof Sobkowiak (http://twitter.com/ksobkowiak[@ksobkowiak])
+:speaker-title: The Apache Software Foundation Member, Senior Solution Architect at Capgemini
+:speaker-email: krzysztof.sobkowiak@capgemini.com
+:speaker-blog: http://krzysztof-sobkowiak.net
+:speaker-twitter: http://twitter.com/ksobkowiak[@ksobkowiak]
+
+= Package your Application using Docker & Kubernetes
+
+[.noredheader,cols="45%,10%,45%"]
+|===
+>.^| image:images/docker-logo.png[align="center", width="29%"]
+|
+<.^| image:images/kubernetes-logo.png[align="center", width="20%"]
+|
+|===
+
+[.cover]
+--
+
+[.event]
+Capgemini Craftsmanship Community #82 +
+Wrocław, 11th of May 2017
+
+[.newline]
+{speaker}
+[.speaker-title]
+The Apache Software Foundation Member +
+Senior Solution Architect at Capgemini
+[.logo-left]
+image:{template-images-dir}/feather.png[width="60", link="http://apache.org"]
+--
+
+// ***************************************************************************
+include::includes/about.adoc[]
+include::includes/disclaimer-cg.adoc[]
+// ***************************************************************************
+
+== Outline
+
+[.noredheader,cols="50%,50%"]
+|===
+a|
+* Introduction to Docker
+* Docker Machine
+* Docker Compose
+* Swarm Mode
+a|
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+== What is Docker?
+
+* Open source project and company
++
+image::images/docker-github.png[width="1500", height=250, align="center"]
+* Used to create containers for software applications
+
+// ----------------------------------------------------------------------------
+
+
+=== WORA = Write Once Run Anywhere
+
+image::images/wora.png[align="center", width="60%"]
+
+// ----------------------------------------------------------------------------
+
+=== PODA = Package Once Deploy Anywhere
+
+image::images/poda.png[align="center", width="60%"]
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+
+// ***************************************************************************
+include::includes/qa-full.adoc[]
+include::includes/license-cg.adoc[]
+//include::includes/credits.adoc[]
+// ***************************************************************************

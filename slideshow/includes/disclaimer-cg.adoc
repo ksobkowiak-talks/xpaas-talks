@@ -1,0 +1,10 @@
+
+=== !
+
+[.centering]
+--
+image:{template-images-dir}/warn.png[]
+
+[.medium-text]
+Views in this presentation are my personal views and do not necessarily reflect the views of Capgemini.
+--

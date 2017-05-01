@@ -1,0 +1,20 @@
+
+== !
+
+[.thanks]
+--
+image:{template-images-dir}/smile.png[]
+
++++<h1>Thanks!</h1>+++
+[.underline]
+image:{template-images-dir}/underline.png[]
+
+[.large-text]
+Any questions?
+
+[.newline]
+You can find me at +
+{speaker-twitter} +
+{speaker-email} +
+{speaker-blog}
+--

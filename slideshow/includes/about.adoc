@@ -1,0 +1,15 @@
+== Your Speaker
+
+[.noredheader,cols="75%,25%"]
+|===
+a|
+* FOSS enthusiast, evangelist & architect
+* Senior Solution Architect at Capgemini
+* The Apache Software Foundation
+** Member
+** Apache ServiceMix commiter & PMC chair (V.P. Apache ServiceMix)
+** active at Apache Karaf, CXF, Camel, ActiveMQ
+* Member/developer at http://oasp.io[OASP], https://ops4j1.jira.com/wiki/[OPS4J]
+//* Co-founder, member & trainer at http://robocap.pl[RoboCap.pl]
+<.^| image:{template-images-dir}/kso1.png[] |
+|===

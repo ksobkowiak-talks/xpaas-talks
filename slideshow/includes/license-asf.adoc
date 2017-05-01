@@ -1,0 +1,16 @@
+=== !
+
+[.centering]
+--
+image:{template-images-dir}/warn.png[]
+
+[.small-text]
++++
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
++++
+
+[.small-text]
+Apache, the Apache feather logo and the Apache project names mentioned in this presentation and their logos are trademarks of link:http://apache.org[The Apache Software Foundation] in the United States and/or other countries.
+All other marks mentioned may be trademarks or registered trademarks of their respective owners.
+All images property of their respective copyright holders.
+--
