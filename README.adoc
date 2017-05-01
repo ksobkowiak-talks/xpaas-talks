@@ -1,4 +1,14 @@
-= Talks about xPaaS (Docker, Kubernetes, OpenShift, Fabric8) and Service Orchestration
+= xPaaS Talks
+
+This repository contains my talks about xPaaS (Docker, Kubernetes, OpenShift, Fabric8, ...) and related themes like:
+
+* service deployment
+* service orchestration
+* service discovery
+
+It contains following talks:
+
+* Package your Application with Docker and Kubernetes
 
 == Copyright and Licensing
 
