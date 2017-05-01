@@ -10,6 +10,12 @@ It contains following talks:
 
 * Package your Application with Docker and Kubernetes
 
+== xPaaS 
+
+xPaaS is a rich set of application development and integration capabilities that will enable users to build and deploy complex enterprise-scale applications. 
+
+http://www.gartner.com/id=2515316[Gartner uses the term xPaaS] to describe the whole spectrum of specialized middleware services that can be offered as PaaS.
+
 == Copyright and Licensing
 
 Copyright (C) 2017 Krzysztof Sobkowiak +
