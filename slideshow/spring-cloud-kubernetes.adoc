@@ -1,0 +1,323 @@
+include::includes/_settings.adoc[]
+
+:revealjs_theme: sobkowiak-cg
+:speaker: Krzysztof Sobkowiak (http://twitter.com/ksobkowiak[@ksobkowiak])
+:speaker-title: The Apache Software Foundation Member, Senior Solution Architect at Capgemini
+:speaker-email: krzysztof.sobkowiak@capgemini.com
+:speaker-blog: http://krzysztof-sobkowiak.net
+:speaker-twitter: http://twitter.com/ksobkowiak[@ksobkowiak]
+
+
+//= Services Orchestration on OpenShift using Spring Cloud Kubernetes
+= Orchestrate Your Services on OpenShift using Spring Cloud Kubernetes
+
+//image::title-logo.png[align="center", width="30%"]
+
+[.cover]
+--
+
+[.event]
+Capgemini Open Days +
+Wrocław, 6th of June 2017
+
+[.newline]
+{speaker}
+[.speaker-title]
+The Apache Software Foundation Member +
+Senior Solution Architect at Capgemini
+[.logo-left]
+image:{template-images-dir}/feather.png[width="60", link="http://apache.org"]
+--
+
+// ***************************************************************************
+include::includes/about.adoc[]
+include::includes/disclaimer-cg.adoc[]
+// ***************************************************************************
+
+== Outline
+
+[.noredheader,cols="50%,50%"]
+|===
+a|
+* ...
+* ...
+* ...
+a|
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+== !
+
+image::images/turbo-camel.png[align="center"]
+
+// ----------------------------------------------------------------------------
+
+=== !
+
+[.large-text]
+Creating business value through software is about speed, safety, iteration, and continuous improvement
+
+// ----------------------------------------------------------------------------
+
+=== !
+
+[.noredheader,cols="40%,4%,56%"]
+|===
+^.^| image:images/java-frameworks.png[]
+a|
+.^a|
+* Simple configuration
+* Curated dependencies and transitive dependencies
+* Built in metrics, monitoring
+* Slim profile for deployment (...micro even?)
++
+#microprofile
+|
+|===
+
+=== !
+
+[.centering]
+--
+[.large-text]
+Writing a single service is nice...
+--
+
+// ----------------------------------------------------------------------------
+
+=== !
+
+[.centering]
+--
+[.large-text]
+...but no microservice is an island
+--
+
+
+// ----------------------------------------------------------------------------
+
+=== Challenges of Distributed Systems
+
+* Configuration management
+* Service registration & discovery
+* Routing & balancing
+* Fault tolerance (Circuit Breakers!)
+* Monitoring
+
+// ----------------------------------------------------------------------------
+
+== !
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+^.^| image:images/netflix-java-logo.png[width="70%"]
+a|
+^.^a|
+* Distributed configuration
+* Service Discovery
+* Loadbalancing
+* Bulkheading
+* Circuit Breaker
+* Fallback
+* Versioning/Routing
+* Based on AWS
+|
+|===
+
+[NOTE.speaker]
+--
+* Bulkheading - so that we can still service traffic reliably by isolating the parts of our application that are affected by a slow or misbehaving collaborator
+* Circuit breaker - If something's broken, don't call it. If a downstream service is down or throwing errors consistently, then there is not much point in trying to call it repeatedly in quick succession. Rather we'll fail fast and check back every now and then to see if it's recovered.
+* Fallback - If the downstream service is sinking and we fail fast, let's give our end users something a bit better than a stacktrace.
+--
+
+// ----------------------------------------------------------------------------
+
+== !
+
+image::images/docker-logo.png[align="center"]
+
+// ----------------------------------------------------------------------------
+
+=== What is Docker?
+
+[.noredheader,cols="50%,4%,46%"]
+|===
+^.<a|
+* Open source project and company
++
+image::images/docker-moby-github.png[width="1500", align="center"]
+* Used to create containers for software applications
+
+[source,dockerfile]
+----
+FROM openjdk
+
+COPY target/hello.jar /usr/src/hello.jar
+
+CMD java -cp /usr/src/hello.jar org.example.App
+----
+
+[source,bash]
+----
+$ docker build -t username/hello
+$ docker run -it -p 8080:8080 username/hello
+----
+
+a|
+^.<a|
+* WORA = Write Once Run Anywhere
+
+image::images/wora.png[align="center", width="70%"]
+
+* PODA = Package Once Deploy Anywhere
+
+image::images/poda.png[align="center", width="70%"]
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+[%notitle]
+=== Docker Mission
+
+image::images/docker-mission.png[background, size=cover]
+
+[NOTE.speaker]
+--
+* Build -- develop an app using Docker containers with any language and any toolchain
+* Ship -- ship the dockerized app and dependencies anywhere -- to QA, teammates, or the cloud -- without breaking anything
+* Run -- scale to 1000s of nodes, move between data centers and clouds, update with zero downtime and more
+--
+
+// ----------------------------------------------------------------------------
+
+== DevOps challenges for multiple containers
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+.<a|
+* How to scale?
+* How to avoid port conflicts?
+* How to manage them in multiple hosts?
+* What happens if a host has a trouble?
+a|
+.<a|
+* How to keep them running?
+* How to update them?
+* Where are my containers?
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+== What about non-java?
+
+image::images/non-java-languages.png[align="center", width="50%"]
+
+// ----------------------------------------------------------------------------
+
+== Meet Kubernetes
+
+[.noredheader,cols="58%,4%,38%"]
+|===
+.^a|
+Greek for _Helmsman_; also the root of the word _Governor_ (from latin: gubernator)
+
+* Container orchestration platform
+* Supports multiple cloud and bare-metal environments
+* Inspired by Google’s experience with containers
+** Rewrite of Google’s internal framework _Borg_
+* Open source, written in Go
+* Manage applications, not machines
+a|
+.^a| image::images/kubernetes-logo.png[align="center", width="50%"]
+|
+|===
+
+[NOTE.speaker]
+--
+κυβερνήτης means "Helmsman" in Greek. Similarly it's related to the word "Governor"
+e.g: "kubernan" in greek means to steer "kubernetes" is helmsman
+"gubernare" means to steer or to govern in Latin "gubernator" is "governor" in Latin
+--
+
+=== Kubernetes
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+.^a|image::images/kubernetes-logo.png[align="center", width="40%"]
+a|
+.^a|
+* Distributed configuration
+* Service Discovery
+* Load-balancing
+* Versioning/Routing
+* Deployments
+* Scaling/Autoscaling
+* Liveness/Health checking
+* Self healing
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== Kubernetes Concepts
+
+Pods:: colocated group of containers that share an IP, namespace, storage volume, resources, lifecycle
+Replica Set:: manages the lifecycle of pods and ensures specified number are running (next gen Replication Controller)
+Service:: Single, stable name for a set of pods, also acts as LB
+Label:: used to organize and select group of objects
+
+// ----------------------------------------------------------------------------
+
+=== Kubernetes Concepts
+
+[.noredheader,cols="60%,2%,38%"]
+|===
+.^a|
+Node:: Machine (physical or VM) in the cluster
+Master:: Central control plane, provides unified view of the cluster
+* etcd: distributed key-value store used to persist Kubernetes system state
+Worker:: Docker host running kubelet (node agent) and proxy services
+* Runs pods and containers
+a|
+.^a|
+image::images/kubernetes-master.png[align="right", width="70%"]
+image::images/kubernetes-worker.png[align="left", width="70%"]
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== !
+
+image::images/kubernetes-cluster.png[align="center", width="80%"]
+// ----------------------------------------------------------------------------
+
+=== OpenShift is Kubernetes
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+.^a|
+* Team self service application deployment
+* Developer focused workflow
+* Enterprise ready (LDAP, RBAC, Oauth, etc)
+* Integrated Docker registry
+* Jenkins Pipeline out of the box
+* Build/deployment triggers
+* Software Defined Networking (SDN)
+* Docker native format/packaging
+* CLI/IDE/Web based tooling
+a|
+.^a|image::images/openshift-stack.png[align="center", width="100%"]
+|
+|===
+
+// ***************************************************************************
+include::includes/qa-full.adoc[]
+include::includes/license-cg.adoc[]
+//include::includes/credits.adoc[]
+// ***************************************************************************

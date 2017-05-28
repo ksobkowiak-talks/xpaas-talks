@@ -43,7 +43,8 @@ include::includes/disclaimer-cg.adoc[]
 [.noredheader,cols="50%,50%"]
 |===
 a|
-* Introduction to Docker
+* Docker 101
+* Docker for Java developers
 * Docker Machine
 * Docker Compose
 * Swarm Mode
@@ -53,11 +54,15 @@ a|
 
 // ----------------------------------------------------------------------------
 
-== What is Docker?
+== Docker 101
+
+// ----------------------------------------------------------------------------
+
+=== What is Docker?
 
 * Open source project and company
 +
-image::images/docker-github.png[width="1500", height=250, align="center"]
+image::images/docker-moby-github.png[width="1500", height=300, align="center"]
 * Used to create containers for software applications
 
 // ----------------------------------------------------------------------------
@@ -74,9 +79,163 @@ image::images/wora.png[align="center", width="60%"]
 image::images/poda.png[align="center", width="60%"]
 
 // ----------------------------------------------------------------------------
+
+=== VMs vs Containers
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+^.>| image:images/runtime-virtualization.png[]
+|
+^.>| image:images/runtime-containers.png[]
+|
+|===
+
 // ----------------------------------------------------------------------------
+
+[%notitle]
+=== Docker Mission
+
+image::images/docker-mission.png[background, size=cover]
+
+[NOTE.speaker]
+--
+* Build -- develop an app using Docker containers with any language and any toolchain
+* Ship -- ship the dockerized app and dependencies anywhere -- to QA, teammates, or the cloud -- without breaking anything
+* Run -- scale to 1000s of nodes, move between data centers and clouds, update with zero downtime and more
+--
+
 // ----------------------------------------------------------------------------
+
+=== Build
+
+[.noredheader,cols="46%,4%,50%"]
+|===
+.<a|
+* Image defined in text-based `Dockerfile`
+* List of commands to build the image
++
+[source,dockerfile]
+----
+FROM ubuntu
+
+CMD echo "Hello world"
+----
+* Docker commands to build the image
++
+[source,bash]
+----
+$ docker build -t org/hello
+----
+|
+.<a| image:images/dockerfile-sample.png[]
+
+* https://docs.docker.com/engine/reference/builder/
+|
+|===
+
 // ----------------------------------------------------------------------------
+
+=== Ship
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+.<a|
+* Store and distribute Docker images with Docker Registry
+** Control where images are stored
+** Own image distribution pipeline
+** Integrate image storage/distribution in dev workflow
+|
+.<a|
+
+* Docker commands to push or pull the image
++
+[source,bash]
+----
+$ docker push org/hello
+$ docker pull org/hello
+----
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== Docker Registry
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+.<a|
+* Docker Hub
+** Free-to-use and hosted
+
+image::images/dockerhub.png[align="center"]
+|
+.<a|
+* Docker Trusted Registry
+** Commercially supported
+** RBAC, LDAP/AD integration, updates, etc
+** Can be setup inside firewall
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== Registry Primary Usage
+
+* CI/CD with Docker
+** Centrally located base images
+** Store individual build images
+** Pull tested images to production
+
+// ----------------------------------------------------------------------------
+
+=== Run
+
+[.noredheader,cols="48%,4%,48%"]
+|===
+.^a|
+image::images/container-box.png[align="center"]
+|
+.<a|
+* Container built from the image
+* Runtime representation of the image
+* Self contained execution environment
+
+[source,bash]
+----
+$ docker run org/hello
+----
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== Docker Workflow
+
+image::images/docker-workflow.png[align="center"]
+
+// ----------------------------------------------------------------------------
+
+=== Demo 1
+
+// ----------------------------------------------------------------------------
+
+== Docker for Java Developers
+
+=== !
+
+[source,dockerfile]
+----
+FROM openjdk
+
+COPY target/hello.jar /usr/src/hello.jar
+
+CMD java -cp /usr/src/hello.jar org.example.App
+----
+
+// ----------------------------------------------------------------------------
+
+=== Demo 2
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
