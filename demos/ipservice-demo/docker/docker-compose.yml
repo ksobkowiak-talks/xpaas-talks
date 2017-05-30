@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  ipservice:
+    image: sobkowiak/ipservice-boot-docker:latest
+    networks:
+      - ipservice
+
+  ipclient:
+    image: sobkowiak/ipclient-boot-docker:latest
+    ports:
+      - "8090:8090"
+    networks:
+      - ipservice
+
+networks:
+  ipservice:
