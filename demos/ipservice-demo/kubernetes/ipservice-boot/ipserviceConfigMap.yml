@@ -1,0 +1,8 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ipservice-boot-kubernetes
+data:
+  application.yaml: |-
+    ipservice:
+      message: hello, spring cloud kubernetes from Wroclaw!
