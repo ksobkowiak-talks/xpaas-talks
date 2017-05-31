@@ -1,0 +1,31 @@
+# Docker Demo
+
+This demo shows how to implement simple microservices using Spring Boot and deploy them on Docker.
+
+## Prepare the demo
+
+The demo requires Docker Engine, Docker Machine and Docker Compose. Please install
+the Docker Engine and use the file link:scripts/setup-docker.sh[] to install the other
+components.
+
+Create the Docker Machine using following command
+
+[source, bash]
+----
+$ docker-machine create --virtualbox-memory "4096" --driver virtualbox ms
+$ eval "$(docker-machine env ms)"
+----
+
+Pull the necessary images to make the later demo simply
+
+[source, bash]
+----
+$ docker pull openjdk:latest
+----
+
+To destroy the machine please use following command
+
+[source, bash]
+----
+$ docker-machine rm ms
+----

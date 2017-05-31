@@ -1,0 +1,518 @@
+# Kubernetes / OpenShift Demo
+
+This demo shows how to implement simple microservices using Spring Boot and deploy them on OpenShift.
+
+## Prepare the demo
+
+Please install the necessary software using the script link:scripts/setup-kubernetes.sh[].
+Use following commands to start and configure Minishift
+
+[source, bash]
+----
+$ minishift config set vm-driver virtualbox
+$ minishift config set memory 4096
+$ minishift config set cpus 2
+$ minishift addons install --defaults
+$ minishift addons enable admin-user
+
+$ minishift start
+$ eval $(minishift docker-env)
+$ eval $(minishift oc-env)
+
+$ oc login -u admin
+
+# needed by spring-cloud-kubernetes
+$ oc policy add-role-to-user cluster-reader system:serviceaccount:$(oc project -q):default
+# needed by Turbine
+$ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):turbine
+$ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):name-client-service
+
+$ oc login -u developer
+----
+
+Populate the local registry with the necessary images to make the later demo simply
+
+[source, bash]
+----
+$ cd ipservice-boot
+$ mvn clean install fabric8:build fabric8:deploy -Dfabric8.mode=openshift
+$ oc delete all -l project=ipservice-boot-kubernetes
+----
+
+## Spring Boot microservices demo
+
+### Implement simple `ipservice` application
+
+. Create a new Spring Boot application using link:https://start.spring.io/[Spring Initializr] or JBoss Forge extension in your IDE.
+This demo has been prepared using Spring Boot `1.5.3.RELEASE`
++
+Sample maven coordinates
++
+[source, xml]
+---
+<groupId>com.capgemini.demos.ms.ipservice</groupId>
+<artifactId>ipservice-boot-kubernetes</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<packaging>jar</packaging>
+---
++
+. Implement simple rest service
++
+[source, java]
+----
+package com.capgemini.demos.ms.ipservice.service;
+
+....
+
+@RestController
+class IPAddressController {
+    private int counter;
+
+    @Autowired
+    private Config config;
+
+    @RequestMapping(value = "/ip", method = RequestMethod.GET)
+    public IPAddress ipaddress() throws Exception {
+        return new IPAddress(++counter, InetAddress.getLocalHost().getHostAddress(), config.getMessage());
+    }
+}
+
+class IPAddress {
+    private final long id;
+    private final String ipAddress;
+    private String message;
+
+    public IPAddress(long id, String ipAddress, String message) {
+        this.id = id;
+        this.ipAddress = ipAddress;
+        this.message = message;
+    }
+
+    ....
+}
+
+@Configuration
+@ConfigurationProperties(prefix = "ipservice")
+public class Config {
+    private String message;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+}
+----
++
+. Add some configuration properties to `application.properties`
++
+----
+spring.application.name=ipservice-boot-kubernetes
+ipservice.message=Hello from IP Service from Kubernetes
+----
++
+. Start the application locally and test it
++
+[source, bash]
+----
+$ mvn spring-boot:run
+$ curl -s http://localhost:8080/ip
+----
+
+### Configure your environment to use Docker from OpenShift
+
+[source, bash]
+----
+$ minishift docker-env
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.100:2376"
+export DOCKER_CERT_PATH="/home/kso/.minishift/certs"
+export DOCKER_API_VERSION="1.23"
+# Run this command to configure your shell:
+# eval $(minishift docker-env)
+
+$ eval $(minishift docker-env)
+----
+
+### Deploy `ipservice` on OpenShift
+
+. Add `fabric8-maven-plugin` to the project pom
++
+[source,xml]
+----
+<plugin>
+  <groupId>io.fabric8</groupId>
+  <artifactId>fabric8-maven-plugin</artifactId>
+  <version>3.4.1</version>
+  <executions>
+    <execution>
+      <id>fmp</id>
+      <goals>
+        <goal>resource</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
+----
++
+You can add the plugin using the forge command `Fabric8: Setup` option or using maven command
++
+----
+$ mvn io.fabric8:fabric8-maven-plugin:3.4.1:setup
+----
++
+. Generate OpenShift and Kubernetes resources using
++
+----
+$ mvn fabric8:resource
+----
++
+Inspect the generated files under `target/classes/META-INF/fabric8`
++
+This step is usually performed automatically
++
+. Build the application
++
+----
+$ mvn clean install fabric8:build -Dfabric8.mode=openshift
+----
++
+This creates a `BuildConfig` in OpenShift and starts the buiild. You can observe the logs using
++
+----
+$ $ oc logs bc/ipservice-boot-kubernetes-s2i
+Receiving source from STDIN as archive ...
+==================================================================
+Starting S2I Java Build .....
+S2I binary build from fabric8-maven-plugin detected
+Copying binaries from /tmp/src/maven to /deployments ...
+... done
+
+Pushing image 172.30.1.1:5000/myproject/ipservice-boot-kubernetes:latest ...
+Pushed 0/23 layers, 0% complete
+Pushed 1/23 layers, 4% complete
+...
+Pushed 23/23 layers, 100% complete
+Push successful
+
+----
++
+. Deploy the `ipservice`
++
+----
+$ mvn fabric8:deploy
+----
++
+It will create `DeploymentConfig`, pods, service and routs. Watch the progress using
++
+----
+$ oc get pods -w
+----
++
+. Test the deployed application
++
+----
+$ oc get svc
+NAME                        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+ipservice-boot-kubernetes   172.30.180.118   <none>        8080/TCP   1m
+
+$ oc get route
+NAME                        HOST/PORT                                                   PATH      SERVICES                    PORT      TERMINATION   WILDCARD
+ipservice-boot-kubernetes   ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io             ipservice-boot-kubernetes   8080                    None
+
+$ curl -s http://ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io/ip
+{"id":1,"ipAddress":"172.17.0.3","message":"Hello from IP Service from Kubernetes"}
+----
++
+. Scale the deployment
++
+----
+$ oc scale --replicas=3 dc/ipservice-boot-kubernetes
+deploymentconfig "ipservice-boot-kubernetes" scaled
+
+$ for i in {1..10}; do curl -s http://ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io/ip |  python -m json.tool; done;
+{
+    "id": 5,
+    "ipAddress": "172.17.0.3",
+    "message": "Hello from IP Service from Kubernetes"
+}
+{
+    "id": 4,
+    "ipAddress": "172.17.0.4",
+    "message": "Hello from IP Service from Kubernetes"
+}
+{
+    "id": 5,
+    "ipAddress": "172.17.0.2",
+    "message": "Hello from IP Service from Kubernetes"
+}
+----
+
+### Configure `ipservice`
+
+. Make sure a pod that runs with spring-cloud-kubernetes has access to the Kubernetes API
++
+[source, bash]
+----
+oc policy add-role-to-user cluster-reader system:serviceaccount:$(oc project -q):default
+----
+. Add Kubernetes Spring Cloud extension into pom file
++
+Properties
++
+[source,xml]
+----
+<spring-cloud.version>Brixton.SR7</spring-cloud.version>
+<spring-cloud-kubernetes.version>0.1.6</spring-cloud-kubernetes.version>
+----
++
+Dependency management
++
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-dependencies</artifactId>
+    <version>${spring-cloud.version}</version>
+    <type>pom</type>
+    <scope>import</scope>
+</dependency>
+----
++
+Dependencies:
++
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-context</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.fabric8</groupId>
+    <artifactId>spring-cloud-starter-kubernetes</artifactId>
+    <version>${spring-cloud-kubernetes.version}</version>
+</dependency>
+----
+. Add some configuration properties to `application.properties`
++
+----
+spring.cloud.kubernetes.reload.enabled=true
+spring.cloud.kubernetes.reload.mode=event
+----
++
+. Create `ipserviceConfigMap.yml` with following content
++
+[source,yaml]
+----
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ipservice-boot-kubernetes
+data:
+  application.yaml: |-
+    ipservice:
+      message: hello, spring cloud kubernetes from Wroclaw!
+----
++
+. Import the file
++
+----
+oc create -f ipserviceConfigMap.yml
+----
++
+Test the changes
++
+----
+$ curl -s http://ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io/ip
+{"id":3762,"ipAddress":"172.17.0.2","message":"hello, spring cloud kubernetes from Wroclaw!"}
+----
+. Change the configuration using following command and test the changes again
++
+----
+$ oc edit cm/ipservice-boot-kubernetes
+----
+
+### Create `ipclient` client application
+
+. Create a client application similar to the previous application, create the controller
++
+[source,java]
+----
+package com.capgemini.demos.ms.ipservice.client;
+
+....
+
+@RestController
+class IPAddressController {
+
+    @Autowired
+    private Config config;
+
+    @RequestMapping(value = "/ip", method = RequestMethod.GET)
+    public IPAddress ipaddress() throws Exception {
+        RestTemplate template = new RestTemplate();
+        return template.getForEntity(config.getServerUrl(), IPAddress.class).getBody();
+    }
+}
+
+@Configuration
+@ConfigurationProperties(prefix = "ipclient")
+public class Config {
+    private String message;
+    private String serverUrl;
+    ...
+}
+----
++
+Sample maven coordinates
++
+[source, xml]
+---
+<groupId>com.capgemini.demos.ms.ipservice</groupId>
+<artifactId>ipclient-boot-kubernetes</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<packaging>jar</packaging>
+---
+. Add some configuration properties to `application.properties`
++
+----
+spring.application.name=ipclient-boot-kubernetes
+ipclient.message=Hello from IP Client from Kubernetes
+ipclient.serverUrl=http://ipservice-boot-kubernetes:8080/ip
+----
+
+. Deploy the application using maven command
++
+----
+$ mvn clean install fabric8:build -Dfabric8.mode=openshift
+$ mvn clean install fabric8:deploy
+----
++
+Check routes and test the service
++
+----
+$ oc get route
+NAME                        HOST/PORT                                                   PATH      SERVICES                    PORT      TERMINATION   WILDCARD
+ipclient-boot-kubernetes    ipclient-boot-kubernetes-myproject.192.168.99.100.nip.io              ipclient-boot-kubernetes    8080                    None
+ipservice-boot-kubernetes   ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io             ipservice-boot-kubernetes   8080                    None
+
+
+$ for i in {1..10}; do curl -s http://ipclient-boot-kubernetes-myproject.192.168.99.100.nip.io/ip |  python -m json.tool; done;
+----
++
+Scale out the `ipservice` and run the `ipclient` again.
+
+### Add circuit breaker to `ipclient`
+
+. Grant the view role to service accounts
++
+----
+$ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):turbine
+$ oc policy add-role-to-user view system:serviceaccount:$(oc project -q):name-client-service
+----
++
+. Deploy the Hystrix dashboard and the Turbine server
++
+----
+$ oc create -f scripts/hystrix/deploy.yml
+
+$ oc get svc
+NAME                        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+hystrix-dashboard           172.30.224.125   <nodes>       80:32679/TCP   7m
+ipclient-boot-kubernetes    172.30.77.233    <none>        8080/TCP       27m
+ipservice-boot-kubernetes   172.30.180.118   <none>        8080/TCP       1h
+turbine-server              172.30.125.180   <nodes>       80:31820/TCP   7m
+
+$ oc expose svc/hystrix-dashboard --port=8080
+route "hystrix-dashboard" exposed
+
+$ oc get route
+NAME                               HOST/PORT                                                          PATH      SERVICES                           PORT      TERMINATION   WILDCARD
+hystrix-dashboard                  hystrix-dashboard-myproject.192.168.99.100.nip.io                            hystrix-dashboard                  8080                    None
+
+----
++
+. Add Hystrix support to the `ipclient`
++
+Properties
++
+[source,xml]
+----
+<spring-cloud.version>Brixton.SR7</spring-cloud.version>
+<spring-cloud-kubernetes.version>0.1.6</spring-cloud-kubernetes.version>
+----
++
+Dependency management
++
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-dependencies</artifactId>
+    <version>${spring-cloud.version}</version>
+    <type>pom</type>
+    <scope>import</scope>
+</dependency>
+----
++
+Dependency
++
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-hystrix</artifactId>
+</dependency>
+----
++
+. Implement the Hystrix command
++
+[source,java]
+----
+@RequestMapping(value = "/ip", method = RequestMethod.GET)
+@HystrixCommand(fallbackMethod = "localIP")
+public IPAddress ipaddress() throws Exception {
+....
+
+public IPAddress localIP() throws UnknownHostException {
+    return new IPAddress(++counter, InetAddress.getLocalHost().getHostAddress(),
+            "This is a local response");
+}
+----
++
+. Build and deploy the application
+. Enable Hystrix for `ipclient` service, e.g.
++
+----
+$ oc edit svc ipclient
+
+labels:
+   expose: "true"
+   hystrix.enabled: "true"
+   ....
+----
++
+. Open the Hystrix Dashboard. Obtain the url using
++
+----
+$ minishift openshift service hystrix-dashboard --url  -n myproject
+http://hystrix-dashboard-myproject.192.168.99.100.nip.io
+----
++
+Test the `ipclient`
++
+----
+$ for i in {1..10000}; do sleep 0.5; curl -s http://ipclient-boot-kubernetes-hystrix-myproject.192.168.99.100.nip.io/ip |  python -m json.tool; done;
+----
++
+. Scale out the `ipservice` to 0 replicas. Check the result. Scale in the service again.
+
+### Cleanup the demo
+
+----
+$ oc delete all -l project=ipservice
+$ oc delete all -l project=ipclient
+----
