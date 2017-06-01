@@ -1,6 +1,6 @@
 include::includes/_settings.adoc[]
 
-:revealjs_theme: sobkowiak-cg
+:revealjs_theme: sobkowiak-cg-craftsmanship
 :speaker: Krzysztof Sobkowiak (http://twitter.com/ksobkowiak[@ksobkowiak])
 :speaker-title: The Apache Software Foundation Member, Senior Solution Architect at Capgemini
 :speaker-email: krzysztof.sobkowiak@capgemini.com
@@ -17,8 +17,9 @@ include::includes/_settings.adoc[]
 --
 
 [.event]
-Capgemini Open Days +
-Wrocław, 6th of June 2017
+//Capgemini Open Days +
+Capgemini Craftsmanship Community #83 +
+Wrocław, 2nd of June 2017
 
 [.newline]
 {speaker}
@@ -34,34 +35,37 @@ include::includes/about.adoc[]
 include::includes/disclaimer-cg.adoc[]
 // ***************************************************************************
 
-== Outline
-
-[.noredheader,cols="50%,50%"]
-|===
-a|
-* ...
-* ...
-* ...
-a|
-|
-|===
-
 // ----------------------------------------------------------------------------
 
+[%notitle]
 == !
 
 image::images/turbo-camel.png[align="center"]
 
 // ----------------------------------------------------------------------------
 
+[%notitle]
 === !
-
 [.large-text]
 Creating business value through software is about speed, safety, iteration, and continuous improvement
 
 // ----------------------------------------------------------------------------
 
-=== !
+//=== How are you keeping up with change?
+//
+//* Trying to incorporate new technology?
+//* Trying to copy what others (Netflix, Amazon) are doing?
+//* Tactical automation?
+//* Created a _DevOps_ team?
+//* Exploring cloud services?
+//* Build/deploy automation?
+//* OpenSource?
+//* Piecemeal integration?
+
+// ----------------------------------------------------------------------------
+
+[%notitle]
+== !
 
 [.noredheader,cols="40%,4%,56%"]
 |===
@@ -77,6 +81,9 @@ a|
 |
 |===
 
+// ----------------------------------------------------------------------------
+
+[%notitle]
 === !
 
 [.centering]
@@ -87,6 +94,7 @@ Writing a single service is nice...
 
 // ----------------------------------------------------------------------------
 
+[%notitle]
 === !
 
 [.centering]
@@ -108,7 +116,8 @@ Writing a single service is nice...
 
 // ----------------------------------------------------------------------------
 
-== !
+[%notitle]
+=== !
 
 [.noredheader,cols="48%,4%,48%"]
 |===
@@ -135,48 +144,48 @@ a|
 
 // ----------------------------------------------------------------------------
 
-== !
+== Typical problems developing microservices
+
+* How to run them all locally?
+* How to package them (dependency management)
+* How to test?
+* Vagrant? VirtualBox? VMs?
+* Specify configuration
+* Process isolation
+* Service discovery
+* Multiple versions?
+
+// ----------------------------------------------------------------------------
+
+//=== Shared infrastructure platforms headaches
+
+//* Different teams
+//* Different rates of change
+//* VM sprawl
+//* Configuration drift
+//* Isolation / multi-tenancy
+//** Performance
+//** Real-time vs batch
+//** Compliance
+//** Security
+//** Technology choices
+
+=== WORA = Write Once Run Anywhere
+
+image::images/wora.png[align="center", width="60%"]
+
+// ----------------------------------------------------------------------------
+
+[%notitle]
+=== !
 
 image::images/docker-logo.png[align="center"]
 
 // ----------------------------------------------------------------------------
 
-=== What is Docker?
+=== PODA = Package Once Deploy Anywhere
 
-[.noredheader,cols="50%,4%,46%"]
-|===
-^.<a|
-* Open source project and company
-+
-image::images/docker-moby-github.png[width="1500", align="center"]
-* Used to create containers for software applications
-
-[source,dockerfile]
-----
-FROM openjdk
-
-COPY target/hello.jar /usr/src/hello.jar
-
-CMD java -cp /usr/src/hello.jar org.example.App
-----
-
-[source,bash]
-----
-$ docker build -t username/hello
-$ docker run -it -p 8080:8080 username/hello
-----
-
-a|
-^.<a|
-* WORA = Write Once Run Anywhere
-
-image::images/wora.png[align="center", width="70%"]
-
-* PODA = Package Once Deploy Anywhere
-
-image::images/poda.png[align="center", width="70%"]
-|
-|===
+image::images/poda.png[align="center", width="60%"]
 
 // ----------------------------------------------------------------------------
 
@@ -191,6 +200,7 @@ image::images/docker-mission.png[background, size=cover]
 * Ship -- ship the dockerized app and dependencies anywhere -- to QA, teammates, or the cloud -- without breaking anything
 * Run -- scale to 1000s of nodes, move between data centers and clouds, update with zero downtime and more
 --
+
 
 // ----------------------------------------------------------------------------
 
@@ -213,9 +223,21 @@ a|
 
 // ----------------------------------------------------------------------------
 
-== What about non-java?
+=== What about non-java?
 
 image::images/non-java-languages.png[align="center", width="50%"]
+
+// ----------------------------------------------------------------------------
+
+=== What if you could do all of this right now with an open-source platform?
+
+* 100% open source, ASL 2.0
+* Technology agnostic (java, nodejs, python, golang, etc)
+* Built upon decades of industry practices
+* 1-click automation
+* Cloud native (on premise, public cloud, hybrid)
+* Complex build/deploy pipelines (human workflows, approvals, chatops, etc)
+* Comprehensive integration inside/outside the platform
 
 // ----------------------------------------------------------------------------
 
@@ -243,6 +265,8 @@ a|
 e.g: "kubernan" in greek means to steer "kubernetes" is helmsman
 "gubernare" means to steer or to govern in Latin "gubernator" is "governor" in Latin
 --
+
+// ----------------------------------------------------------------------------
 
 === Kubernetes
 
@@ -295,6 +319,7 @@ image::images/kubernetes-worker.png[align="left", width="70%"]
 === !
 
 image::images/kubernetes-cluster.png[align="center", width="80%"]
+
 // ----------------------------------------------------------------------------
 
 === OpenShift is Kubernetes
@@ -305,6 +330,7 @@ image::images/kubernetes-cluster.png[align="center", width="80%"]
 * Team self service application deployment
 * Developer focused workflow
 * Enterprise ready (LDAP, RBAC, Oauth, etc)
+* Higher level abstraction above containers for delivering technology and business value
 * Integrated Docker registry
 * Jenkins Pipeline out of the box
 * Build/deployment triggers
@@ -313,6 +339,49 @@ image::images/kubernetes-cluster.png[align="center", width="80%"]
 * CLI/IDE/Web based tooling
 a|
 .^a|image::images/openshift-stack.png[align="center", width="100%"]
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== What about client-side load balancing?
+
+[.noredheader,cols="58%,4%,38%"]
+|===
+.^a|
+Spring Cloud Kubernetes:
+
+* DiscoveryClient
+* Ribbon integration
+* Actuator/Health integrations
+* Hystrix/Turbine Dashboard integrations (kubeflix)
+* Zipkin Tracking
+* Configuration via ConfigMaps
+//* Archaius Bridge for dynamic configs
+a|
+.^a|image::images/fabric8-logo.png[align="center", width="60%"]
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== Fabric8 all the things!
+
+[.noredheader,cols="68%,4%,28%"]
+|===
+.^a|
+* Built on top of Kubernetes
+* Wizards to create microservices
+* Package as immutable containers
+* Rolling upgrade across environments
+* 1-Click install of fully configured CI/CD (Jenkins Pipeline, Nexus, Git)
+* Feedback loops
+* Lots of developer tooling
+* ChatOps
+* iPaaS/Integration
+* Chaos Monkey
+a|
+.^a|image::images/fabric8-logo.png[align="center", width="80%"]
 |
 |===
 
