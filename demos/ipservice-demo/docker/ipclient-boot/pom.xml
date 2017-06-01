@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.capgemini.demos.ms.ipservice</groupId>
-	<artifactId>ipclient-boot-kubernetes</artifactId>
+	<artifactId>ipclient-boot-docker</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>ipclient-boot-kubernetes</name>
-	<description>IP Service client with Spring Boot and Kubernetes</description>
+	<name>ipclient-boot-docker</name>
+	<description>IP Service client with Spring Boot and Docker</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

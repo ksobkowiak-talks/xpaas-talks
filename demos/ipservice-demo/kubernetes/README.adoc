@@ -183,7 +183,7 @@ $ mvn clean install fabric8:build -Dfabric8.mode=openshift
 This creates a `BuildConfig` in OpenShift and starts the buiild. You can observe the logs using
 +
 ----
-$ $ oc logs bc/ipservice-boot-kubernetes-s2i
+$ oc logs bc/ipservice-boot-kubernetes-s2i
 Receiving source from STDIN as archive ...
 ==================================================================
 Starting S2I Java Build .....

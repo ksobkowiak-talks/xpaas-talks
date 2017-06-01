@@ -23,6 +23,392 @@ Pull the necessary images to make the later demo simply
 $ docker pull openjdk:latest
 ----
 
+## Spring Boot demo
+
+### Implement simple `ipservice` application
+
+. Create a new Spring Boot application using link:https://start.spring.io/[Spring Initializr] or JBoss Forge extension in your IDE.
+This demo has been prepared using Spring Boot `1.5.3.RELEASE`
++
+Sample maven coordinates
++
+[source, xml]
+---
+<groupId>com.capgemini.demos.ms.ipservice</groupId>
+<artifactId>ipservice-boot-docker</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<packaging>jar</packaging>
+---
++
+. Implement simple rest service
++
+[source, java]
+----
+package com.capgemini.demos.ms.ipservice.service;
+
+....
+
+@RestController
+class IPAddressController {
+    private int counter;
+
+    @Autowired
+    private Config config;
+
+    @RequestMapping(value = "/ip", method = RequestMethod.GET)
+    public IPAddress ipaddress() throws Exception {
+        return new IPAddress(++counter, InetAddress.getLocalHost().getHostAddress(), config.getMessage());
+    }
+}
+
+class IPAddress {
+    private final long id;
+    private final String ipAddress;
+    private String message;
+
+    public IPAddress(long id, String ipAddress, String message) {
+        this.id = id;
+        this.ipAddress = ipAddress;
+        this.message = message;
+    }
+
+    ....
+}
+
+@Configuration
+@ConfigurationProperties(prefix = "ipservice")
+public class Config {
+    private String message;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+}
+----
++
+. Add some configuration properties to `application.properties`
++
+----
+spring.application.name=ipservice-boot-docker
+ipservice.message=Hello from IP Service from Docker
+----
++
+. Start the application locally and test it
++
+[source, bash]
+----
+$ mvn spring-boot:run
+$ curl -s http://localhost:8080/ip
+----
+
+### Configure your environment to use Docker from Docker Machine
+
+[source, bash]
+----
+$ docker-machine env ms
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.100:2376"
+export DOCKER_CERT_PATH="/home/kso/.docker/machine/machines/ms"
+export DOCKER_MACHINE_NAME="ms"
+# Run this command to configure your shell:
+# eval $(docker-machine env ms)
+
+$ eval $(docker-machine env ms)
+----
+
+### Deploy the `ipservice` using the `Dockerfile`
+
+. Preapre a `Dockerfile` to be used to build the container
++
+[source, dockerfile]
+----
+FROM openjdk:latest
+
+ADD target/ipservice-boot-docker-0.0.1-SNAPSHOT.jar .
+EXPOSE 8090
+CMD /usr/bin/java -Xmx400m -Xms400m -jar ipservice-boot-docker-0.0.1-SNAPSHOT.jar
+----
+. Build the image
++
+[source, bash]
+----
+$ docker build . -t sobkowiak/ipservice-boot-docker
+
+$ docker images
+REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
+sobkowiak/ipservice-boot-docker   latest              e0e8d458c945        4 seconds ago       625MB
+openjdk                           latest              ab0ecda9094c        2 weeks ago         610MB
+----
+. Run the `ipservice` container
++
+[source, bash]
+----
+$ docker run --name ipservice -d -p 8090:8090 sobkowiak/ipservice-boot-docker
+----
+. Test the service
++
+[source, bash]
+----
+$ curl http://$(docker-machine ip ms):8090/ip
+{"id":1,"ipAddress":"172.17.0.2","message":"Hello from IP Service from Docker"}
+----
+
+### Create `ipclient` client application
+
+. Create a client application similar to the previous application, create the controller
++
+[source,java]
+----
+package com.capgemini.demos.ms.ipservice.client;
+
+....
+
+@RestController
+class IPAddressController {
+
+    @Autowired
+    private Config config;
+
+    @RequestMapping(value = "/ip", method = RequestMethod.GET)
+    public IPAddress ipaddress() throws Exception {
+        RestTemplate template = new RestTemplate();
+        return template.getForEntity(config.getServerUrl(), IPAddress.class).getBody();
+    }
+}
+
+@Configuration
+@ConfigurationProperties(prefix = "ipclient")
+public class Config {
+    private String message;
+    private String serverUrl;
+    ...
+}
+----
++
+Sample maven coordinates
++
+[source, xml]
+---
+<groupId>com.capgemini.demos.ms.ipservice</groupId>
+<artifactId>ipclient-boot-docker</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<packaging>jar</packaging>
+---
+. Add some configuration properties to `application.properties`
++
+----
+spring.application.name=ipclient-boot-docker
+ipclient.message=Hello from IP Client from Docker
+ipclient.serverUrl=http://ipservice:8080/ip
+----
+
+### Build the `ipclient` image
+
+. Preapre a `Dockerfile` to be used to build the container
++
+[source, dockerfile]
+----
+FROM openjdk:latest
+
+ADD target/ipclient-boot-docker-0.0.1-SNAPSHOT.jar .
+EXPOSE 8090
+CMD /usr/bin/java -Xmx400m -Xms400m -jar ipclient-boot-docker-0.0.1-SNAPSHOT.jar
+----
+. Build the image
++
+[source, bash]
+----
+$ docker build . -t sobkowiak/ipclient-boot-docker
+
+$ docker images
+REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
+sobkowiak/ipclient-boot-docker    latest              e18cf63b8964        11 seconds ago      625MB
+sobkowiak/ipservice-boot-docker   latest              e0e8d458c945        28 minutes ago      625MB
+openjdk                           latest              ab0ecda9094c        2 weeks ago         610MB
+----
+
+### Deploy `ipservice` and `ipclient` using links
+
+[source, bash]
+----
+$ docker run --name ipservice -d sobkowiak/ipservice-boot-docker
+$ docker run --name ipclient -d -p 8090:8090 --link ipservice:ipservice sobkowiak/ipclient-boot-docker
+$ curl http://$(docker-machine ip ms):8090/ip
+----
+
+### Create a network for the demo
+
+[source, bash]
+----
+$ docker network create --driver bridge ipservice
+
+$ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+d2123178d9e9        bridge              bridge              local
+dc654d93c6f3        host                host                local
+4edf049dc8ff        ipservice           bridge              local
+3f5d4dd8bda6        none                null                local
+----
+
+### Deploy `ipservice` and `ipclient` using network
+
+[source, bash]
+----
+$ docker run --name ipservice --net ipservice -d sobkowiak/ipservice-boot-docker
+$ docker run --name ipclient -d -p 8090:8090 --net ipservice sobkowiak/ipclient-boot-docker
+$ curl http://$(docker-machine ip ms):8090/ip
+----
+
+### Build/run the docker image using maven plugin
+
+. Add `docker-maven-plugin` to the `pom.xml` file
++
+[source, xml]
+----
+  <plugin>
+    <groupId>io.fabric8</groupId>
+    <artifactId>docker-maven-plugin</artifactId>
+    <version>0.21.0</version>
+    <configuration>
+      <images>
+        <image>
+          <alias>ipservice</alias>
+          <name>sobkowiak/ipservice-boot-docker:latest</name>
+          <build>
+            <from>openjdk:latest</from>
+            <assembly>
+              <descriptorRef>artifact</descriptorRef>
+            </assembly>
+            <cmd>java -jar maven/${project.artifactId}-${project.version}.jar
+            </cmd>
+          </build>
+          <run>
+            <network>
+              <mode>custom</mode>
+              <name>ipservice</name>
+              <alias>ipservice</alias>
+            </network>
+          </run>
+        </image>
+      </images>
+    </configuration>
+  </plugin>
+----
+. Build the image
++
+[source, bash]
+----
+mvn docker:build
+----
+. Run the image
++
+[source, bash]
+----
+mvn docker:start
+----
+. Repeat the same steps for `ipclient`
+
+### Run the demo using Docker Compose
+
+[source, bash]
+----
+$ docker-compose up -d
+----
+
+### Run the demo using the Swarm Mode
+
+. Init the Swarm mode
++
+[source, bash]
+----
+$ docker swarm init --advertise-addr $(docker-machine ip ms)
+  Swarm initialized: current node (4auxnkva9awur7wikqccz5w5i) is now a manager.
+
+  To add a worker to this swarm, run the following command:
+
+      docker swarm join \
+      --token SWMTKN-1-2k0ubr0hc8jnf8492g1ujhnj7udfhjztq966y8auux0gi3qjft-46d1zsdecmkdefo2wc70h6i2x \
+      192.168.99.100:2377
+
+  To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+----
+. Deploy the demo
++
+[source, bash]
+----
+$ docker stack deploy --compose-file docker-compose.yml ipdemo
+Creating network ipdemo_ipservice
+Creating service ipdemo_ipclient
+Creating service ipdemo_ipservice
+----
+. Test the service
++
+[source, bash]
+----
+$ for i in {1..10}; do curl -s http://$(docker-machine ip ms):8090/ip |  python -m json.tool; done;
+{
+    "id": 3,
+    "ipAddress": "10.0.0.5",
+    "message": "Hello from IP Service from Docker"
+}
+{
+    "id": 4,
+    "ipAddress": "10.0.0.5",
+    "message": "Hello from IP Service from Docker"
+}
+{
+    "id": 5,
+    "ipAddress": "10.0.0.5",
+    "message": "Hello from IP Service from Docker"
+}
+----
+. Scale the service
++
+[source, bash]
+----
+$ docker service scale ipdemo_ipservice=5
+image sobkowiak/ipservice-boot-docker:latest could not be accessed on a registry to record
+its digest. Each node will access sobkowiak/ipservice-boot-docker:latest independently,
+possibly leading to different nodes running different
+versions of the image.
+
+ipdemo_ipservice scaled to 5
+
+
+$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                                    PORTS
+1jhqgd1071oh        ipdemo_ipservice    replicated          5/5                 sobkowiak/ipservice-boot-docker:latest
+oblpzwvklyzs        ipdemo_ipclient     replicated          1/1                 sobkowiak/ipclient-boot-docker:latest    *:8090->8090/tcp
+----
+. Test the service
++
+[source, bash]
+----
+$ for i in {1..10}; do curl -s http://$(docker-machine ip ms):8090/ip |  python -m json.tool; done;
+{
+    "id": 1,
+    "ipAddress": "10.0.0.9",
+    "message": "Hello from IP Service from Docker"
+}
+{
+    "id": 1,
+    "ipAddress": "10.0.0.8",
+    "message": "Hello from IP Service from Docker"
+}
+{
+    "id": 1,
+    "ipAddress": "10.0.0.7",
+    "message": "Hello from IP Service from Docker"
+}
+----
+
+## Destroy the demo
+
 To destroy the machine please use following command
 
 [source, bash]
