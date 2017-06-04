@@ -1,6 +1,6 @@
 include::includes/_settings.adoc[]
 
-:revealjs_theme: sobkowiak-cg-craftsmanship
+:revealjs_theme: sobkowiak-cg
 :speaker: Krzysztof Sobkowiak (http://twitter.com/ksobkowiak[@ksobkowiak])
 :speaker-title: The Apache Software Foundation Member, Senior Solution Architect at Capgemini
 :speaker-email: krzysztof.sobkowiak@capgemini.com
@@ -17,17 +17,16 @@ include::includes/_settings.adoc[]
 --
 
 [.event]
-//Capgemini Open Days +
-Capgemini Craftsmanship Community #83 +
-Wrocław, 2nd of June 2017
+Capgemini Open Days +
+Wrocław, 6th of June 2017
 
 [.newline]
 {speaker}
 [.speaker-title]
 The Apache Software Foundation Member +
 Senior Solution Architect at Capgemini
-[.logo-left]
-image:{template-images-dir}/feather.png[width="60", link="http://apache.org"]
+//[.logo-left]
+//image:{template-images-dir}/feather.png[width="60", link="http://apache.org"]
 --
 
 // ***************************************************************************
@@ -61,6 +60,34 @@ Creating business value through software is about speed, safety, iteration, and 
 //* Build/deploy automation?
 //* OpenSource?
 //* Piecemeal integration?
+
+// ----------------------------------------------------------------------------
+
+//=== Shared infrastructure platforms headaches
+
+//* Different teams
+//* Different rates of change
+//* VM sprawl
+//* Configuration drift
+//* Isolation / multi-tenancy
+//** Performance
+//** Real-time vs batch
+//** Compliance
+//** Security
+//** Technology choices
+
+// ----------------------------------------------------------------------------
+
+=== Typical problems developing microservices
+
+* How to run them all locally?
+* How to package them (dependency management)
+* How to test?
+* Vagrant? VirtualBox? VMs?
+* Specify configuration
+* Process isolation
+* Service discovery
+* Multiple versions?
 
 // ----------------------------------------------------------------------------
 
@@ -144,32 +171,6 @@ a|
 
 // ----------------------------------------------------------------------------
 
-== Typical problems developing microservices
-
-* How to run them all locally?
-* How to package them (dependency management)
-* How to test?
-* Vagrant? VirtualBox? VMs?
-* Specify configuration
-* Process isolation
-* Service discovery
-* Multiple versions?
-
-// ----------------------------------------------------------------------------
-
-//=== Shared infrastructure platforms headaches
-
-//* Different teams
-//* Different rates of change
-//* VM sprawl
-//* Configuration drift
-//* Isolation / multi-tenancy
-//** Performance
-//** Real-time vs batch
-//** Compliance
-//** Security
-//** Technology choices
-
 === WORA = Write Once Run Anywhere
 
 image::images/wora.png[align="center", width="60%"]
@@ -200,7 +201,6 @@ image::images/docker-mission.png[background, size=cover]
 * Ship -- ship the dockerized app and dependencies anywhere -- to QA, teammates, or the cloud -- without breaking anything
 * Run -- scale to 1000s of nodes, move between data centers and clouds, update with zero downtime and more
 --
-
 
 // ----------------------------------------------------------------------------
 
@@ -359,13 +359,28 @@ Spring Cloud Kubernetes:
 * Configuration via ConfigMaps
 //* Archaius Bridge for dynamic configs
 a|
-.^a|image::images/fabric8-logo.png[align="center", width="60%"]
+.^a|
+image::images/spring-cloud-netflix-logo.png[align="center", width="40%"]
+image::images/fabric8-logo.png[align="center", width="50%"]
 |
 |===
 
 // ----------------------------------------------------------------------------
 
-=== Fabric8 all the things!
+== Typical problems developing microservices
+
+* How to run them all locally? => Minikube, Minishift, CDK
+* How to package them => Docker
+* How to test? => Arquillian
+* Vagrant? VirtualBox? VMs? => Minikube, Minishift, CDK
+* Specify configuration => Templates, EnvVars, ConfigMap
+* Process isolation => Docker
+* Service discovery => Kubernetes
+* Multiple versions? => API manager
+
+// ----------------------------------------------------------------------------
+
+== Fabric8 all the things!
 
 [.noredheader,cols="68%,4%,28%"]
 |===
@@ -390,3 +405,24 @@ include::includes/qa-full.adoc[]
 include::includes/license-cg.adoc[]
 //include::includes/credits.adoc[]
 // ***************************************************************************
+
+=== Credits
+
+[.small-text]
+--
+.Special thanks to all the people who made and released their awesome resources for free:
+* link:https://www.slideshare.net/RedHatDevelopers/microservices-for-java-developers[_MicroServices for Java Developers_]
+by link:http://twitter.com/christianposta[Christian Posta]
+* link:https://www.slideshare.net/ceposta/microservices-with-spring-cloud-netflix-oss-and-kubernetes[_Microservices with Spring Cloud, Netflix OSS and Kubernetes_]
+by link:http://twitter.com/christianposta[Christian Posta]
+* link:https://www.slideshare.net/RedHatDevelopers/microservices-with-docker-kubernetes-and-jenkins[_Microservices with Docker, Kubernetes, and Jenkins_]
+by link:http://twitter.com/rafabene[Rafael Benevides] and link:http://twitter.com/christianposta[Christian Posta]
+* link:https://www.slideshare.net/RedHatDevelopers/kubernetes-for-java-developers[_Kubernetes Introduction_]
+by link:http://twitter.com/rafabene[Rafael Benevides] and link:http://twitter.com/yanaga[Edson Yanaga]
+* link:https://www.slideshare.net/ceposta/chicago-microservices-integration-talk[_Integration in age of DevOps_]
+by link:http://twitter.com/christianposta[Christian Posta]
+* link:https://github.com/docker/labs/blob/master/slides/docker-introduction.pdf[_Docker for Java Developers_]
+by link:http://twitter.com/arungupta[Arun Gupta]
+* link:https://github.com/arun-gupta/kubernetes-java-sample/blob/master/slides/kubernetes-for-java-developers.pdf[_Kubernetes for Java Developers_]
+by link:http://twitter.com/arungupta[Arun Gupta]
+--
