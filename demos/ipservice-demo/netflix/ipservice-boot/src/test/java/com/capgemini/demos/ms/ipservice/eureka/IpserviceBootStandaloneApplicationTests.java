@@ -1,4 +1,4 @@
-package com.capgemini.demos.ms.ipservice.service;
+package com.capgemini.demos.ms.ipservice.eureka;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
