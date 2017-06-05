@@ -16,7 +16,7 @@ include::includes/_settings.adoc[]
 [.noredheader,cols="35%,30%,35%"]
 |===
 >.^| image:images/spring-cloud-netflix-logo.png[align="center", width="27%"]
-^.^| image:images/kubernetes-logo.png[align="center", width="29%"]
+^.<| image:images/kubernetes-logo.png[align="center", width="29%"]
 <.^| image:images/openshift-logo.png[align="center", width="25%"]
 |
 |===
@@ -118,8 +118,42 @@ a|
 
 // ----------------------------------------------------------------------------
 
+=== WORA = Write Once Run Anywhere
+
+image::images/wora.png[align="center", width="60%"]
+
+// ----------------------------------------------------------------------------
+
 [%notitle]
 === !
+
+image::images/docker-logo.png[align="center"]
+
+// ----------------------------------------------------------------------------
+
+=== PODA = Package Once Deploy Anywhere
+
+image::images/poda.png[align="center", width="60%"]
+
+// ----------------------------------------------------------------------------
+
+[%notitle]
+=== Docker Mission
+
+image::images/docker-mission.png[background, size=cover]
+
+[NOTE.speaker]
+--
+* Build -- develop an app using Docker containers with any language and any toolchain
+* Ship -- ship the dockerized app and dependencies anywhere -- to QA, teammates, or the cloud -- without breaking anything
+* Run -- scale to 1000s of nodes, move between data centers and clouds, update with zero downtime and more
+--
+
+
+// ----------------------------------------------------------------------------
+
+[%notitle]
+== !
 
 [.centering]
 --
@@ -177,42 +211,16 @@ a|
 * Fallback - If the downstream service is sinking and we fail fast, let's give our end users something a bit better than a stacktrace.
 --
 
-// ----------------------------------------------------------------------------
-
-=== WORA = Write Once Run Anywhere
-
-image::images/wora.png[align="center", width="60%"]
 
 // ----------------------------------------------------------------------------
 
-[%notitle]
-=== !
+== What about non-java?
 
-image::images/docker-logo.png[align="center"]
-
-// ----------------------------------------------------------------------------
-
-=== PODA = Package Once Deploy Anywhere
-
-image::images/poda.png[align="center", width="60%"]
+image::images/non-java-languages.png[align="center", width="50%"]
 
 // ----------------------------------------------------------------------------
 
-[%notitle]
-=== Docker Mission
-
-image::images/docker-mission.png[background, size=cover]
-
-[NOTE.speaker]
---
-* Build -- develop an app using Docker containers with any language and any toolchain
-* Ship -- ship the dockerized app and dependencies anywhere -- to QA, teammates, or the cloud -- without breaking anything
-* Run -- scale to 1000s of nodes, move between data centers and clouds, update with zero downtime and more
---
-
-// ----------------------------------------------------------------------------
-
-== DevOps challenges for multiple containers
+=== DevOps challenges for multiple containers
 
 [.noredheader,cols="48%,4%,48%"]
 |===
@@ -228,12 +236,6 @@ a|
 * Where are my containers?
 |
 |===
-
-// ----------------------------------------------------------------------------
-
-=== What about non-java?
-
-image::images/non-java-languages.png[align="center", width="50%"]
 
 // ----------------------------------------------------------------------------
 
