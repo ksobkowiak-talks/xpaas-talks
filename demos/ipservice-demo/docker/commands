@@ -1,0 +1,40 @@
+docker-machine create --virtualbox-memory "4096" --driver virtualbox ms
+eval "$(docker-machine env ms)"
+
+docker pull openjdk:latest
+
+mvn spring-boot:run
+curl -s http://localhost:8080/ip
+
+docker-machine env ms
+eval $(docker-machine env ms)
+
+docker build . -t sobkowiak/ipservice-boot-docker
+docker images
+docker run --name ipservice -d -p 8090:8090 sobkowiak/ipservice-boot-docker
+curl http://$(docker-machine ip ms):8090/ip
+
+docker build . -t sobkowiak/ipclient-boot-docker
+docker images
+
+docker run --name ipservice -d sobkowiak/ipservice-boot-docker
+docker run --name ipclient -d -p 8090:8090 --link ipservice:ipservice sobkowiak/ipclient-boot-docker
+curl http://$(docker-machine ip ms):8090/ip
+
+docker network create --driver bridge ipservice
+docker network ls
+docker run --name ipservice --net ipservice -d sobkowiak/ipservice-boot-docker
+docker run --name ipclient -d -p 8090:8090 --net ipservice sobkowiak/ipclient-boot-docker
+curl http://$(docker-machine ip ms):8090/ip
+
+docker-compose up -d
+
+docker swarm init --advertise-addr $(docker-machine ip ms)
+docker stack deploy --compose-file docker-compose.yml ipdemo
+for i in {1..10}; do curl -s http://$(docker-machine ip ms):8090/ip |  python -m json.tool; done;
+docker service scale ipdemo_ipservice=5
+docker service ls
+for i in {1..10}; do curl -s http://$(docker-machine ip ms):8090/ip |  python -m json.tool; done;
+docker stack rm ipdemo
+
+docker-machine rm ms

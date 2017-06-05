@@ -22,6 +22,7 @@
     <java.version>1.8</java.version>
     <spring-cloud.version>Brixton.SR7</spring-cloud.version>
     <spring-cloud-kubernetes.version>0.1.6</spring-cloud-kubernetes.version>
+    <fabric8.mode>openshift</fabric8.mode>
   </properties>
 
   <dependencyManagement>
@@ -77,6 +78,10 @@
             <id>fmp</id>
             <goals>
               <goal>resource</goal>
+              <!--
+              <goal>build</goal>
+              <goal>deploy</goal>
+              -->
             </goals>
           </execution>
         </executions>

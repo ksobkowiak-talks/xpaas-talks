@@ -1,0 +1,61 @@
+minishift config set vm-driver virtualbox
+minishift config set memory 4096
+minishift config set cpus 2
+minishift addons install --defaults
+minishift addons enable admin-user
+minishift start
+
+eval $(minishift docker-env)
+eval $(minishift oc-env)
+
+oc login -u admin
+oc policy add-role-to-user cluster-reader system:serviceaccount:$(oc project -q):default
+oc policy add-role-to-user view system:serviceaccount:$(oc project -q):turbine
+oc policy add-role-to-user view system:serviceaccount:$(oc project -q):name-client-service
+oc login -u developer
+
+cd ipservice-boot
+mvn clean install fabric8:build fabric8:deploy -Dfabric8.mode=openshift
+oc delete all -l project=ipservice-boot-kubernetes
+
+
+mvn spring-boot:run
+curl -s http://localhost:8080/ip
+
+minishift docker-env
+eval $(minishift docker-env)
+
+mvn io.fabric8:fabric8-maven-plugin:3.4.1:setup
+mvn fabric8:resource
+
+mvn clean install fabric8:build -Dfabric8.mode=openshift
+oc logs bc/ipservice-boot-kubernetes-s2i
+mvn fabric8:deploy
+oc get pods -w
+oc get svc
+oc get route
+curl -s http://ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io/ip
+
+
+oc scale --replicas=3 dc/ipservice-boot-kubernetes
+for i in {1..10}; do curl -s http://ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io/ip |  python -m json.tool; done;
+curl -s http://ipservice-boot-kubernetes-myproject.192.168.99.100.nip.io/ip
+
+oc edit cm/ipservice-boot-kubernetes
+
+mvn clean install fabric8:build -Dfabric8.mode=openshift
+mvn clean install fabric8:deploy
+oc get route
+for i in {1..10}; do curl -s http://ipclient-boot-kubernetes-myproject.192.168.99.100.nip.io/ip |  python -m json.tool; done;
+
+oc policy add-role-to-user view system:serviceaccount:$(oc project -q):turbine
+oc policy add-role-to-user view system:serviceaccount:$(oc project -q):name-client-service
+oc create -f scripts/hystrix/deploy.yml
+oc get svc
+oc expose svc/hystrix-dashboard --port=8080
+oc get route
+oc edit svc ipclient
+minishift openshift service hystrix-dashboard --url  -n myproject
+for i in {1..10000}; do sleep 0.5; curl -s http://ipclient-boot-kubernetes-hystrix-myproject.192.168.99.100.nip.io/ip |  python -m json.tool; done;
+oc delete all -l project=ipservice
+oc delete all -l project=ipclient
