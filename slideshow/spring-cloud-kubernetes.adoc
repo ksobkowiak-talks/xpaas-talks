@@ -389,7 +389,7 @@ public class EurekaApplication {
 ----
 eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
 eureka.instance.leaseRenewalIntervalInSeconds=5
-spring.application.name=catalog
+spring.application.name=ipservice
 eureka.instance.metadataMap.instanceId=ipservice:${random.value}
 eureka.instance.preferIpAddress=true
 ----
