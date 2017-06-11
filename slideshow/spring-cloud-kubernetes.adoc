@@ -7,8 +7,6 @@ include::includes/_settings.adoc[]
 :speaker-blog: http://krzysztof-sobkowiak.net
 :speaker-twitter: http://twitter.com/ksobkowiak[@ksobkowiak]
 
-
-//= Services Orchestration on OpenShift using Spring Cloud Kubernetes
 = Orchestrate Your Services on OpenShift using Spring Cloud Kubernetes
 
 //image::title-logo.png[align="center", width="30%"]
@@ -25,8 +23,8 @@ include::includes/_settings.adoc[]
 --
 
 [.event]
-Capgemini Open Days +
-Wrocław, 6th of June 2017
+Capgemini Open Day +
+Poznań, 13th of June 2017
 
 [.newline]
 {speaker}
@@ -118,6 +116,43 @@ a|
 
 // ----------------------------------------------------------------------------
 
+=== Spring Boot
+
+[.noredheader,cols="46%,4%,50%"]
+|===
+a|
+* It can be pretty small...
+* Predefined packages/starters available
+* Can generate WAR or JAR file
+|
+a|
+[source, java]
+----
+@RestController
+@SpringBootApplication
+public class ControllerAndMain {
+  private int counter;
+
+  @Autowired
+  private Config config;
+
+  @RequestMapping(value = "/ip", method = RequestMethod.GET)
+  public IPAddress ipaddress() throws Exception {
+      return new IPAddress(++counter,
+        InetAddress.getLocalHost().getHostAddress(),
+        config.getMessage());
+  }
+
+  public static void main(String[] args) {
+    SpringApplication.run(
+      ControllerAndMain.class, args);
+  }
+}
+---- |
+|===
+
+// ----------------------------------------------------------------------------
+
 === WORA = Write Once Run Anywhere
 
 image::images/wora.png[align="center", width="60%"]
@@ -149,6 +184,115 @@ image::images/docker-mission.png[background, size=cover]
 * Run -- scale to 1000s of nodes, move between data centers and clouds, update with zero downtime and more
 --
 
+// ----------------------------------------------------------------------------
+
+=== Docker for Java Developers
+
+* Dockerfile
++
+[source, dockerfile]
+----
+FROM openjdk:latest
+
+ADD target/ipservice-boot-docker-0.0.1-SNAPSHOT.jar .
+EXPOSE 8090
+CMD /usr/bin/java -Xmx400m -Xms400m -jar ipservice-boot-docker-0.0.1-SNAPSHOT.jar
+----
+* Build image
++
+[source, bash]
+----
+$ docker build . -t capgemini/ipservice-boot-docker
+
+$ docker images
+REPOSITORY                        TAG        IMAGE ID         CREATED          SIZE
+capgemini/ipservice-boot-docker   latest     e0e8d458c945     4 seconds ago    625MB
+openjdk                           latest     ab0ecda9094c     2 weeks ago      610MB
+----
+* Run the container
++
+[source, bash]
+----
+$ docker run --name ipservice -d -p 8090:8090 capgemini/ipservice-boot-docker
+
+$ curl http://$(docker-machine ip ms):8090/ip
+{"id":1,"ipAddress":"172.17.0.2","message":"Hello from IP Service from Docker"}
+----
+
+// ----------------------------------------------------------------------------
+
+=== Maven Plugin
+
+[.noredheader,cols="58%,4%,38%"]
+|===
+.<a|
+[source, xml,linenums]
+----
+<plugin>
+  <groupId>io.fabric8</groupId>
+  <artifactId>docker-maven-plugin</artifactId>
+  <version>0.21.0</version>
+  <configuration>
+    <images>
+      <image>
+        <alias>ipservice</alias>
+        <name>capgemini/ipservice-boot-docker:latest</name>
+        <build>
+          <from>openjdk:latest</from>
+          <assembly>
+            <descriptorRef>artifact</descriptorRef>
+          </assembly>
+          <cmd>java -jar maven/${project.artifactId}-${project.version}.jar</cmd>
+        </build>
+      </image>
+    </images>
+  </configuration>
+</plugin>
+----
+a|
+.<a|
+[source, bash]
+----
+$ mvn docker:build
+$ mvn docker:start
+----
+|
+|===
+
+// ----------------------------------------------------------------------------
+
+=== Docker Compose
+
+[source,yaml]
+----
+  version: "3"
+
+  services:
+    ipservice:
+      image: capgemini/ipservice-boot-docker:latest
+      networks:
+        - ipservice
+
+    ipclient:
+      image: capgemini/ipclient-boot-docker:latest
+      ports:
+        - "8090:8090"
+      networks:
+        - ipservice
+
+  networks:
+    ipservice:
+----
+
+[source,bash]
+----
+$ docker-compose up -d
+----
+
+[source,bash]
+----
+$ docker stack deploy --compose-file=docker-compose.yml ipdemo
+----
 
 // ----------------------------------------------------------------------------
 
@@ -211,6 +355,89 @@ a|
 * Fallback - If the downstream service is sinking and we fail fast, let's give our end users something a bit better than a stacktrace.
 --
 
+// ----------------------------------------------------------------------------
+
+=== Eureka Server
+
+* `@EnableEurekaServer`
+* Dependency to `cloud-starter-eureka-server`
+
+[source, java]
+----
+@EnableEurekaServer
+@EnableAutoConfiguration
+public class EurekaApplication {
+  public static void main(String[] args) {
+    SpringApplication.run(EurekaApplication.class, args);
+  }
+}
+----
+
+// ----------------------------------------------------------------------------
+
+=== Eureka Client
+
+* Registers automatically with the Eureka server under a defined name
+* Can access other Microservices
+* Integrates Load Balancing with Ribbon using
+** `DiscoveryClient`, `FeignClient`
+** Eureka aware `RestTemplate` (sample later)
+* `@EnableDiscoveryClient` or `@EnableEurekaClient`
+* Dependency to `spring-cloud-starter-eureka`
+
+[source]
+----
+eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
+eureka.instance.leaseRenewalIntervalInSeconds=5
+spring.application.name=catalog
+eureka.instance.metadataMap.instanceId=ipservice:${random.value}
+eureka.instance.preferIpAddress=true
+----
+
+// ----------------------------------------------------------------------------
+
+=== `RestTemplate` & Load Balancing
+
+* `@RibbonClient`
+* Dependency to `spring-cloud-starter-ribbon`
+
+[source, java]
+----
+@RibbonClient("ipclient")
+... // Left out other Spring Cloud / Boot Annotations
+public class IPAddressController {
+
+  @Autowired
+  private RestTemplate restTemplate;
+
+  @RequestMapping(value = "/ip", method = RequestMethod.GET)
+  public IPAddress ipaddress() throws Exception {
+    return template.getForEntity("http://ipservice/ip", IPAddress.class).getBody();
+  }
+}
+----
+
+// ----------------------------------------------------------------------------
+
+=== Hystrix with Annotations
+
+* Java proxies automaticaly created
+* Annotations of _javanica_ library
+* `@EnableCircuitBreaker` or `@EnableHystrix`, dependency to `spring-cloud-starter-hystrix`
+
+[source, java]
+----
+@RequestMapping(value = "/ip", method = RequestMethod.GET)
+@HystrixCommand(fallbackMethod = "localIP")
+public IPAddress ipaddress() throws Exception {
+    return template.getForEntity("http://ipservice/ip", IPAddress.class).getBody();
+}
+
+public IPAddress localIP() throws UnknownHostException {
+    return new IPAddress(++counter, InetAddress.getLocalHost().getHostAddress(),
+        config.getMessage());
+}
+----
 
 // ----------------------------------------------------------------------------
 
@@ -377,6 +604,10 @@ image::images/fabric8-logo.png[align="center", width="50%"]
 
 // ----------------------------------------------------------------------------
 
+== Demo
+
+// ----------------------------------------------------------------------------
+
 == Typical problems developing microservices
 
 * How to run them all locally? => Minikube, Minishift, CDK
@@ -386,7 +617,7 @@ image::images/fabric8-logo.png[align="center", width="50%"]
 * Specify configuration => Templates, EnvVars, ConfigMap
 * Process isolation => Docker
 * Service discovery => Kubernetes
-* Multiple versions? => API manager
+* Multiple versions? => Kubernetes, API manager
 
 // ----------------------------------------------------------------------------
 
